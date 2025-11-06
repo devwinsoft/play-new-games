@@ -1,0 +1,107 @@
+version: 1.0.0
+project: "play-new-games"
+description: "Google Play 신작 게임 추천 서비스를 위한 Claude Skills 레지스트리"
+
+skills:
+  - name: ingest_play
+    path: skills/ingest_play
+    entry: handler.py
+    runtime: python3
+    version: 0.2.0
+    description: "Google Play에서 신작 게임 메타데이터 수집 및 정규화"
+    requires: [network, write(outputs)]
+    env: [LOG_LEVEL]
+    inputs:
+      - name: query
+        type: string
+        required: false
+        default: "new games"
+      - name: country
+        type: string
+        required: false
+        default: "KR"
+      - name: language
+        type: string
+        required: false
+        default: "ko"
+      - name: limit
+        type: integer
+        required: false
+        default: 120
+    outputs:
+      - name: raw_items_path
+        type: file
+        example: "outputs/20251106/<run_id>/artifacts/raw_games.json"
+
+  - name: enrich_llm
+    path: skills/enrich_llm
+    entry: handler.py
+    runtime: python3
+    version: 0.3.1
+    description: "LLM(Claude)로 장르/테마 태깅, 핵심 요약, 키워드 추출"
+    requires: [network, read, write(outputs)]
+    env: [ANTHROPIC_API_KEY, LOG_LEVEL]
+    inputs:
+      - name: raw_items_path
+        type: file
+        required: true
+    outputs:
+      - name: enriched_items_path
+        type: file
+        example: "outputs/20251106/<run_id>/artifacts/enriched_games.json"
+
+  - name: ranker
+    path: skills/ranker
+    entry: scorer.py
+    runtime: python3
+    version: 0.1.5
+    description: "신규성/품질/인기도 점수 계산 및 다양성 재랭킹"
+    requires: [read, write(outputs)]
+    env: [LOG_LEVEL]
+    inputs:
+      - name: enriched_items_path
+        type: file
+        required: true
+      - name: top_k
+        type: integer
+        required: false
+        default: 50
+    outputs:
+      - name: ranked_items_path
+        type: file
+        example: "outputs/20251106/<run_id>/artifacts/ranked_games.json"
+
+  - name: publish
+    path: skills/publish
+    entry: to_json.py
+    runtime: python3
+    version: 0.1.0
+    description: "랭킹 결과를 정적 JSON/DB로 배포"
+    requires: [read, write(outputs), network]
+    env: [LOG_LEVEL, DB_URL]   # DB 사용 시
+    inputs:
+      - name: ranked_items_path
+        type: file
+        required: true
+      - name: emit_db
+        type: boolean
+        required: false
+        default: false
+    outputs:
+      - name: published_json_path
+        type: file
+        example: "outputs/20251106/<run_id>/reports/published.json"
+
+pipelines:
+  - name: daily_refresh
+    schedule: "30 6,18 * * *"   # 매일 06:30/18:30 KST
+    steps:
+      - ingest_play
+      - enrich_llm
+      - ranker
+      - publish
+
+metadata:
+  maintainer: "형준"
+  last_updated: "2025-11-06"
+  repository: "https://github.com/your/repo"

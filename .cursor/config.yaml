@@ -1,0 +1,30 @@
+project:
+  name: play-new-games
+  type: python
+  description: Google Play 신작 게임 추천 서비스
+
+skills:
+  enabled: true
+  directory: skills
+  index_file: skills/skill-index.yaml
+  auto_discover: true
+  
+  # Skill file patterns
+  patterns:
+    - "*/SKILL.md"
+    - "*/skill.md"
+  
+  # Skill metadata format
+  metadata_format: yaml_frontmatter
+
+python:
+  version: "3.8+"
+  virtual_env: .venv
+  requirements: requirements.txt
+
+paths:
+  skills: skills
+  outputs: outputs
+  configs: configs
+  tests: tests
+

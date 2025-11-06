@@ -1,0 +1,101 @@
+# Cursor Rules for play-new-games project
+
+## Available Skills
+
+이 프로젝트는 `skills/` 디렉토리에 여러 커스텀 스킬을 포함하고 있습니다.
+각 스킬의 `SKILL.md` 파일을 참고하여 사용 방법을 확인하세요.
+
+### Skills Location
+- Skills Directory: `skills/`
+- Skills Index: `skills/skill-index.yaml`
+- Each skill has a `SKILL.md` file with metadata and usage instructions
+
+### Available Skills List
+
+1. **ingest_play** - Google Play 게임 데이터 수집
+   - Path: `skills/ingest_play/SKILL.md`
+   - Entry: `python skills/ingest_play/handler.py`
+
+2. **enrich_llm** - LLM 기반 게임 태깅/요약
+   - Path: `skills/enrich_llm/SKILL.md`
+   - Entry: `python skills/enrich_llm/handler.py`
+
+3. **ranker** - 게임 랭킹 및 점수 계산
+   - Path: `skills/ranker/SKILL.md`
+   - Entry: `python skills/ranker/scorer.py`
+
+4. **meta-prompt-generator** - 커스텀 프롬프트 생성기
+   - Path: `skills/meta-prompt-generator/SKILL.md`
+
+5. **flutter-init** - Flutter 프로젝트 생성
+   - Path: `skills/flutter-init/SKILL.md`
+
+6. **nextjs15-init** - Next.js 15 프로젝트 생성
+   - Path: `skills/nextjs15-init/SKILL.md`
+
+7. **midjourney-cardnews-bg** - Midjourney 프롬프트 생성
+   - Path: `skills/midjourney-cardnews-bg/SKILL.md`
+
+8. **landing-page-guide** - 랜딩 페이지 가이드
+   - Path: `skills/landing-page-guide/SKILL.md`
+
+9. **prompt-enhancer** - 프롬프트 개선 도구
+   - Path: `skills/prompt-enhancer/SKILL.md`
+
+10. **codex** - Codex CLI 실행 도구
+    - Path: `skills/codex/skill.md`
+
+11. **codex-claude-loop** - Codex + Claude 루프
+    - Path: `skills/codex-claude-loop/SKILL.md`
+
+12. **code-changelog** - 코드 변경 로그 생성
+    - Path: `skills/code-changelog/SKILL.md`
+
+## How to Use Skills
+
+스킬을 사용하려면 해당 스킬의 SKILL.md 파일을 참고하세요.
+각 파일은 다음 정보를 포함합니다:
+
+- **name**: 스킬 이름
+- **description**: 스킬 설명 및 사용 시점
+- **Metadata**: 버전, 엔트리 포인트, 런타임
+- **When to Use This Skill**: 언제 사용해야 하는지
+- **Inputs/Outputs**: 입출력 스키마
+- **Usage Examples**: 사용 예시
+
+## Project Structure
+
+```
+play-new-games/
+├── .cursor/          # Cursor 설정
+├── skills/           # 모든 커스텀 스킬
+│   ├── skill-index.yaml  # 스킬 레지스트리
+│   ├── ingest_play/
+│   ├── enrich_llm/
+│   ├── ranker/
+│   └── ...
+├── outputs/          # 스킬 실행 결과
+├── requirements.txt  # Python 의존성
+└── README.md
+```
+
+## Skill Discovery
+
+Claude/Cursor는 다음 방법으로 스킬을 탐지합니다:
+
+1. `skills/` 디렉토리의 각 하위 디렉토리 검색
+2. `SKILL.md` 또는 `skill.md` 파일 찾기
+3. 프론트매터(YAML)에서 메타데이터 파싱:
+   ```yaml
+   ---
+   name: skill-name
+   description: Skill description
+   ---
+   ```
+
+## Notes
+
+- 모든 Python 스킬은 가상환경 활성화 후 실행하세요: `.venv\Scripts\Activate.ps1`
+- 의존성 설치: `pip install -r requirements.txt`
+- 환경 변수는 PowerShell에서 `$env:VAR_NAME="value"` 형식으로 설정
+

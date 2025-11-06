@@ -1,0 +1,20 @@
+version: 1.0.0
+skills_directory: skills
+auto_discover: true
+
+# Skills registry
+skills:
+  - ingest_play
+  - enrich_llm
+  - ranker
+  - publish
+  - meta-prompt-generator
+  - flutter-init
+  - nextjs15-init
+  - midjourney-cardnews-bg
+  - landing-page-guide
+  - prompt-enhancer
+  - codex
+  - codex-claude-loop
+  - code-changelog
+

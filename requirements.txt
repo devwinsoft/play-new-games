@@ -1,0 +1,9 @@
+# Google Play scraping
+google-play-scraper==1.2.4
+
+# Data processing
+python-dateutil==2.8.2
+
+# Logging
+colorlog==6.8.0
+
