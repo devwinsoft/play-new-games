@@ -7,9 +7,8 @@ Google Play 스토어에서 신작 게임을 수집하고, LLM으로 분석하�
 이 프로젝트는 다음 과정을 자동화합니다:
 
 1. **수집(Ingest)**: Google Play에서 신작 게임 메타데이터 수집
-2. **강화(Enrich)**: LLM을 사용해 게임 태깅, 요약, 키워드 추출
-3. **랭킹(Rank)**: 신규성/품질/인기도 기반 점수 계산 및 순위 선정
-4. **발행(Publish)**: 결과를 JSON/PPT/보고서로 출력
+2. **랭킹(Rank)**: 신규성/품질/인기도 기반 점수 계산 및 순위 선정
+3. **발행(Publish)**: 결과를 HTML 리포트로 시각화
 
 ## 🚀 빠른 시작
 
@@ -24,20 +23,38 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. 스킬 실행
+### 2. 전체 파이프라인 실행
 
-```bash
-# 1단계: 게임 데이터 수집
-python skills/ingest_play/handler.py
+#### Windows (PowerShell)
 
-# 2단계: LLM으로 데이터 강화 (ANTHROPIC_API_KEY 필요)
-ANTHROPIC_API_KEY="sk-..." python skills/enrich_llm/handler.py
+```powershell
+# 전체 파이프라인 (수집 → 랭킹)
+.\run-pipeline.ps1
 
-# 3단계: 랭킹 계산
-python skills/ranker/scorer.py
+# 또는 파라미터 지정
+.\run-pipeline.ps1 -Query "puzzle" -TopK 30
+
+# HTML 리포트 생성
+.\run-html-report.ps1 -RankedItemsPath "outputs\20251107\103252\artifacts\ranked_games.json"
 ```
 
-자세한 내용은 `TEST_GUIDE.md`를 참조하세요.
+#### Linux/WSL/macOS (Python 통합 스크립트)
+
+```bash
+# 가상환경 활성화
+source .venv/bin/activate
+
+# 전체 파이프라인 + HTML 리포트
+python scripts/run_pipeline.py --html
+
+# 퍼즐 게임 top 30
+python scripts/run_pipeline.py --query puzzle --top-k 30 --html
+
+# 빠른 테스트 (10개만)
+python scripts/run_pipeline.py --limit 10 --top-k 5 --html --open-browser
+```
+
+자세한 내용은 `TEST_GUIDE.md` 및 `scripts/README.md`를 참조하세요.
 
 ## 📁 프로젝트 구조
 
@@ -50,6 +67,10 @@ play-new-games/
 │   ├── enrich_llm/      # LLM 데이터 강화
 │   ├── ranker/          # 랭킹 계산
 │   └── ...              # 기타 스킬들
+├── scripts/             # 파이프라인 스크립트
+│   ├── run_pipeline.py  # Python 통합 파이프라인
+│   ├── run_pipeline.sh  # Linux/WSL 래퍼
+│   └── README.md        # 스크립트 문서
 ├── outputs/             # 실행 결과물
 ├── configs/             # 설정 파일
 ├── tests/              # 테스트 코드
@@ -67,7 +88,7 @@ play-new-games/
 | `ingest_play` | Google Play 게임 데이터 수집 | [SKILL.md](skills/ingest_play/SKILL.md) |
 | `enrich_llm` | LLM 기반 태깅/요약 | [SKILL.md](skills/enrich_llm/SKILL.md) |
 | `ranker` | 게임 랭킹 및 점수 계산 | [SKILL.md](skills/ranker/SKILL.md) |
-| `publish` | 결과물 발행 | [SKILL.md](skills/publish/SKILL.md) |
+| `publish_html` | HTML 리포트 생성 | [SKILL.md](skills/publish_html/SKILL.md) |
 
 ### 개발 도구
 
@@ -145,23 +166,53 @@ python -m unittest discover skills/ingest_play/tests/ -v
 
 ## 🎮 예시 워크플로우
 
-전체 파이프라인 실행:
+### Windows (PowerShell)
 
-```bash
+```powershell
 # 1. 가상환경 활성화
 .venv\Scripts\Activate.ps1
 
-# 2. 환경 변수 설정
-$env:ANTHROPIC_API_KEY="sk-..."
-$env:LIMIT="50"
+# 2. 파이프라인 실행
+.\run-pipeline.ps1
 
-# 3. 파이프라인 실행
-python skills/ingest_play/handler.py
-python skills/enrich_llm/handler.py
-python skills/ranker/scorer.py
+# 3. HTML 리포트 생성
+.\run-html-report.ps1 -RankedItemsPath "outputs\20251107\103252\artifacts\ranked_games.json"
 
 # 4. 결과 확인
-ls outputs/20251106/*/artifacts/
+ls outputs/20251107/*/artifacts/
+ls outputs/20251107/*/reports/
+```
+
+### Linux/WSL (Python)
+
+```bash
+# 1. 가상환경 활성화
+source .venv/bin/activate
+
+# 2. 전체 파이프라인 실행 (수집 → 랭킹 → HTML)
+python scripts/run_pipeline.py --html
+
+# 3. 결과 확인
+ls outputs/20251107/*/artifacts/
+ls outputs/20251107/*/reports/
+
+# 4. HTML 리포트 열기 (WSL)
+explorer.exe outputs/20251107/103252/reports/game_ranking.html
+```
+
+### 크로스 플랫폼 (Python)
+
+Python 스크립트는 Windows/Linux/macOS 모두에서 동작합니다:
+
+```bash
+# 기본 실행 (한국 신작 top 50 + HTML)
+python scripts/run_pipeline.py --html
+
+# 퍼즐 게임 탐색
+python scripts/run_pipeline.py --query puzzle --country US --top-k 30 --html
+
+# 빠른 테스트 (브라우저 자동 열기)
+python scripts/run_pipeline.py --limit 10 --top-k 5 --html --open-browser
 ```
 
 ---

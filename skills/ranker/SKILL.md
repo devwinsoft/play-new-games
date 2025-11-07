@@ -49,7 +49,7 @@ skills/ranker/
 
 | name | type | required | default | description |
 |------|------|----------|---------|-------------|
-| enriched_items_path | file | true | - | enrich_llm 스킬의 출력 파일 경로 |
+| raw_items_path | file | true | - | ingest_play 스킬의 출력 파일 경로 (또는 enriched_items_path) |
 | top_k | integer | false | 50 | 선정할 상위 게임 수 |
 
 ## Outputs
@@ -116,7 +116,7 @@ Maximal Marginal Relevance 알고리즘으로 장르 다양성 확보:
 
 ## Core Workflow
 
-1. **입력 파일 읽기**: enriched_items_path에서 게임 데이터 로드
+1. **입력 파일 읽기**: raw_items_path에서 게임 데이터 로드
 2. **점수 계산**: 신규성, 품질, 인기도 점수 계산
 3. **최종 점수**: 가중 평균으로 최종 점수 산출
 4. **다양성 재랭킹**: MMR 알고리즘으로 장르 다양성 고려
@@ -128,19 +128,19 @@ Maximal Marginal Relevance 알고리즘으로 장르 다양성 확보:
 ### 기본 사용 (상위 50개)
 
 ```bash
-enriched_items_path="outputs/20251106/142530/artifacts/enriched_games.json" python skills/ranker/scorer.py
+RAW_ITEMS_PATH="outputs/20251106/142530/artifacts/raw_games.json" python skills/ranker/scorer.py
 ```
 
 ### 상위 30개 선정
 
 ```bash
-enriched_items_path="outputs/20251106/142530/artifacts/enriched_games.json" top_k=30 python skills/ranker/scorer.py
+RAW_ITEMS_PATH="outputs/20251106/142530/artifacts/raw_games.json" TOP_K=30 python skills/ranker/scorer.py
 ```
 
 ### 환경 변수로 설정
 
 ```bash
-export ENRICHED_ITEMS_PATH="outputs/20251106/142530/artifacts/enriched_games.json"
+export RAW_ITEMS_PATH="outputs/20251106/142530/artifacts/raw_games.json"
 export TOP_K=100
 python skills/ranker/scorer.py
 ```
@@ -156,8 +156,8 @@ python skills/ranker/scorer.py
 
 | 문제 | 원인 | 해결 방법 |
 |------|------|-----------|
-| 입력 파일 없음 | 경로 오류 | enriched_items_path 확인 |
-| 점수 계산 오류 | 필수 필드 누락 | 입력 데이터 스키마 확인 |
+| 입력 파일 없음 | 경로 오류 | raw_items_path 확인 |
+| 점수 계산 오류 | 필수 필드 누락 | 입력 데이터 스키마 확인 (rating, release_date, installs) |
 | 편향된 결과 | MMR 미적용 | 다양성 파라미터 조정 |
 
 ## Customization
@@ -185,7 +185,7 @@ TAU = 30  # 감쇠 시간 상수 (일)
 
 ## Integration
 
-- **입력**: `enrich_llm` 스킬의 출력 사용
+- **입력**: `ingest_play` 스킬의 출력 사용 (또는 `enrich_llm` 출력도 가능)
 - **출력**: `publish` 스킬의 입력으로 제공
 
 ## Additional Notes
