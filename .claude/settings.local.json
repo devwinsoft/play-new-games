@@ -11,7 +11,9 @@
       "Bash(ENRICHED_ITEMS_PATH=\"/mnt/c/Users/USER/Documents/Projects/play-new-games/outputs/20251107/060751/artifacts/enriched_games.json\" TOP_K=50 RUN_ID=\"060751\" python3:*)",
       "Bash(QUERY=\"action\" COUNTRY=\"US\" LANGUAGE=\"ko\" LIMIT=\"120\" RUN_ID=\"062408\" python3:*)",
       "Bash(RAW_ITEMS_PATH=\"/mnt/c/Users/USER/Documents/Projects/play-new-games/outputs/20251107/062408/artifacts/raw_games.json\" RUN_ID=\"062408\" ANTHROPIC_API_KEY=\"$ANTHROPIC_API_KEY\" python3:*)",
-      "Bash(ENRICHED_ITEMS_PATH=\"/mnt/c/Users/USER/Documents/Projects/play-new-games/outputs/20251107/062408/artifacts/enriched_games.json\" TOP_K=50 RUN_ID=\"062408\" python3:*)"
+      "Bash(ENRICHED_ITEMS_PATH=\"/mnt/c/Users/USER/Documents/Projects/play-new-games/outputs/20251107/062408/artifacts/enriched_games.json\" TOP_K=50 RUN_ID=\"062408\" python3:*)",
+      "Bash(fi)",
+      "Bash(RANKED_ITEMS_PATH=\"/mnt/c/Users/USER/Documents/Projects/play-new-games/outputs/20251107/060751/artifacts/ranked_games.json\" QUERY=\"puzzle\" COUNTRY=\"kr\" RUN_ID=\"060751\" python3:*)"
     ],
     "deny": [],
     "ask": []

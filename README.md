@@ -45,16 +45,16 @@ pip install -r requirements.txt
 source .venv/bin/activate
 
 # 전체 파이프라인 + HTML 리포트
-python scripts/run_pipeline.py --html
+python pipelines/run_pipeline.py --html
 
 # 퍼즐 게임 top 30
-python scripts/run_pipeline.py --query puzzle --top-k 30 --html
+python pipelines/run_pipeline.py --query puzzle --top-k 30 --html
 
 # 빠른 테스트 (10개만)
-python scripts/run_pipeline.py --limit 10 --top-k 5 --html --open-browser
+python pipelines/run_pipeline.py --limit 10 --top-k 5 --html --open-browser
 ```
 
-자세한 내용은 `TEST_GUIDE.md` 및 `scripts/README.md`를 참조하세요.
+자세한 내용은 `pipelines/README.md` 및 `pipelines/WSL_TEST_GUIDE.md`를 참조하세요.
 
 ## 📁 프로젝트 구조
 
@@ -62,20 +62,26 @@ python scripts/run_pipeline.py --limit 10 --top-k 5 --html --open-browser
 play-new-games/
 ├── .cursor/              # Cursor IDE 설정
 ├── skills/              # 모든 스킬 모듈
-│   ├── skill-index.yaml # 스킬 레지스트리
 │   ├── ingest_play/     # 게임 데이터 수집
-│   ├── enrich_llm/      # LLM 데이터 강화
 │   ├── ranker/          # 랭킹 계산
+│   ├── publish_html/    # HTML 리포트 생성
 │   └── ...              # 기타 스킬들
-├── scripts/             # 파이프라인 스크립트
+├── modules/             # 공통 모듈
+│   └── code_changelog_tracker.py  # 변경 이력 로거
+├── pipelines/           # 파이프라인 스크립트
 │   ├── run_pipeline.py  # Python 통합 파이프라인
 │   ├── run_pipeline.sh  # Linux/WSL 래퍼
-│   └── README.md        # 스크립트 문서
+│   ├── README.md        # 파이프라인 문서
+│   └── WSL_TEST_GUIDE.md # WSL 테스트 가이드
+├── examples/            # 예제 코드
+│   └── changelog_example.py
+├── docs/                # 문서
+│   ├── CHANGELOG_QUICKSTART.md
+│   ├── CHANGELOG_INTEGRATION_GUIDE.md
+│   └── CHANGELOG_REQUEST_TEMPLATES.md
 ├── outputs/             # 실행 결과물
-├── configs/             # 설정 파일
-├── tests/              # 테스트 코드
+├── reviews/             # 변경 이력 문서
 ├── requirements.txt    # Python 의존성
-├── TEST_GUIDE.md       # 테스트 가이드
 └── README.md           # 이 파일
 ```
 
@@ -86,7 +92,6 @@ play-new-games/
 | 스킬 | 설명 | 문서 |
 |------|------|------|
 | `ingest_play` | Google Play 게임 데이터 수집 | [SKILL.md](skills/ingest_play/SKILL.md) |
-| `enrich_llm` | LLM 기반 태깅/요약 | [SKILL.md](skills/enrich_llm/SKILL.md) |
 | `ranker` | 게임 랭킹 및 점수 계산 | [SKILL.md](skills/ranker/SKILL.md) |
 | `publish_html` | HTML 리포트 생성 | [SKILL.md](skills/publish_html/SKILL.md) |
 
@@ -97,6 +102,7 @@ play-new-games/
 | `flutter-init` | Flutter 프로젝트 생성 | [SKILL.md](skills/flutter-init/SKILL.md) |
 | `nextjs15-init` | Next.js 15 프로젝트 생성 | [SKILL.md](skills/nextjs15-init/SKILL.md) |
 | `meta-prompt-generator` | 커스텀 프롬프트 생성 | [SKILL.md](skills/meta-prompt-generator/SKILL.md) |
+| `code-changelog` | 코드 변경 이력 자동 기록 ⭐ | [SKILL.md](skills/code-changelog/SKILL.md) |
 
 ### 유틸리티
 
@@ -117,9 +123,6 @@ QUERY="new games"      # 검색 쿼리
 COUNTRY="KR"           # 국가 코드
 LANGUAGE="ko"          # 언어 코드
 LIMIT=120              # 최대 수집 게임 수
-
-# enrich_llm
-ANTHROPIC_API_KEY="sk-..."  # Claude API 키 (필수)
 
 # 공통
 LOG_LEVEL="INFO"       # 로그 레벨
@@ -144,7 +147,50 @@ python -m pytest tests/ -v
 
 # 특정 스킬 테스트
 python -m unittest discover skills/ingest_play/tests/ -v
+
+# Code Changelog 예제 실행
+python examples/changelog_example.py
 ```
+
+## 📝 Code Changelog (변경 이력 추적)
+
+모든 코드 변경사항을 자동으로 기록하고 웹에서 확인할 수 있습니다.
+
+### 빠른 시작
+
+```bash
+# 1. 초기화
+python modules/code_changelog_tracker.py init
+
+# 2. 예제 실행
+python examples/changelog_example.py
+
+# 3. 문서 서버 실행
+cd reviews && python3 -m http.server 4000
+
+# 4. 브라우저에서 확인
+# http://localhost:4000
+```
+
+### 파이프라인에 통합
+
+```python
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from modules.code_changelog_tracker import CodeChangeLogger
+
+logger = CodeChangeLogger("Pipeline Run")
+logger.log_file_creation("output.json", "data...", "Pipeline result")
+logger.save_and_build()
+```
+
+**자세한 내용:**
+- 📝 **요청 템플릿**: [docs/CHANGELOG_REQUEST_TEMPLATES.md](docs/CHANGELOG_REQUEST_TEMPLATES.md) ⭐ 시작
+- 🚀 빠른 시작: [docs/CHANGELOG_QUICKSTART.md](docs/CHANGELOG_QUICKSTART.md)
+- 🔧 통합 가이드: [docs/CHANGELOG_INTEGRATION_GUIDE.md](docs/CHANGELOG_INTEGRATION_GUIDE.md)
+- 💡 예제: [examples/changelog_example.py](examples/changelog_example.py)
 
 ## 🤝 기여
 
@@ -160,9 +206,7 @@ python -m unittest discover skills/ingest_play/tests/ -v
 
 ## 📞 지원
 
-- 이슈: [GitHub Issues](https://github.com/your/repo/issues)
-- 문서: [docs/](docs/)
-- 테스트 가이드: [TEST_GUIDE.md](TEST_GUIDE.md)
+- 테스트 가이드: [WSL_TEST_GUIDE.md](scripts/WSL_TEST_GUIDE.md)
 
 ## 🎮 예시 워크플로우
 
@@ -190,7 +234,7 @@ ls outputs/20251107/*/reports/
 source .venv/bin/activate
 
 # 2. 전체 파이프라인 실행 (수집 → 랭킹 → HTML)
-python scripts/run_pipeline.py --html
+python pipelines/run_pipeline.py --html
 
 # 3. 결과 확인
 ls outputs/20251107/*/artifacts/
@@ -206,13 +250,13 @@ Python 스크립트는 Windows/Linux/macOS 모두에서 동작합니다:
 
 ```bash
 # 기본 실행 (한국 신작 top 50 + HTML)
-python scripts/run_pipeline.py --html
+python pipelines/run_pipeline.py --html
 
 # 퍼즐 게임 탐색
-python scripts/run_pipeline.py --query puzzle --country US --top-k 30 --html
+python pipelines/run_pipeline.py --query puzzle --country US --top-k 30 --html
 
 # 빠른 테스트 (브라우저 자동 열기)
-python scripts/run_pipeline.py --limit 10 --top-k 5 --html --open-browser
+python pipelines/run_pipeline.py --limit 10 --top-k 5 --html --open-browser
 ```
 
 ---

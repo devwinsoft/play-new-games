@@ -16,39 +16,35 @@
    - Path: `skills/ingest_play/SKILL.md`
    - Entry: `python skills/ingest_play/handler.py`
 
-2. **enrich_llm** - LLM 기반 게임 태깅/요약
-   - Path: `skills/enrich_llm/SKILL.md`
-   - Entry: `python skills/enrich_llm/handler.py`
-
-3. **ranker** - 게임 랭킹 및 점수 계산
+2. **ranker** - 게임 랭킹 및 점수 계산
    - Path: `skills/ranker/SKILL.md`
    - Entry: `python skills/ranker/scorer.py`
 
-4. **meta-prompt-generator** - 커스텀 프롬프트 생성기
+3. **meta-prompt-generator** - 커스텀 프롬프트 생성기
    - Path: `skills/meta-prompt-generator/SKILL.md`
 
-5. **flutter-init** - Flutter 프로젝트 생성
+4. **flutter-init** - Flutter 프로젝트 생성
    - Path: `skills/flutter-init/SKILL.md`
 
-6. **nextjs15-init** - Next.js 15 프로젝트 생성
+5. **nextjs15-init** - Next.js 15 프로젝트 생성
    - Path: `skills/nextjs15-init/SKILL.md`
 
-7. **midjourney-cardnews-bg** - Midjourney 프롬프트 생성
+6. **midjourney-cardnews-bg** - Midjourney 프롬프트 생성
    - Path: `skills/midjourney-cardnews-bg/SKILL.md`
 
-8. **landing-page-guide** - 랜딩 페이지 가이드
+7. **landing-page-guide** - 랜딩 페이지 가이드
    - Path: `skills/landing-page-guide/SKILL.md`
 
-9. **prompt-enhancer** - 프롬프트 개선 도구
+8. **prompt-enhancer** - 프롬프트 개선 도구
    - Path: `skills/prompt-enhancer/SKILL.md`
 
-10. **codex** - Codex CLI 실행 도구
+9. **codex** - Codex CLI 실행 도구
     - Path: `skills/codex/skill.md`
 
-11. **codex-claude-loop** - Codex + Claude 루프
+10. **codex-claude-loop** - Codex + Claude 루프
     - Path: `skills/codex-claude-loop/SKILL.md`
 
-12. **code-changelog** - 코드 변경 로그 생성
+11. **code-changelog** - 코드 변경 로그 생성
     - Path: `skills/code-changelog/SKILL.md`
 
 ## How to Use Skills
@@ -71,7 +67,7 @@ play-new-games/
 ├── skills/           # 모든 커스텀 스킬
 │   ├── skill-index.yaml  # 스킬 레지스트리
 │   ├── ingest_play/
-│   ├── enrich_llm/
+│   ├── publish_html/
 │   ├── ranker/
 │   └── ...
 ├── outputs/          # 스킬 실행 결과
@@ -92,6 +88,112 @@ Claude/Cursor는 다음 방법으로 스킬을 탐지합니다:
    description: Skill description
    ---
    ```
+
+## Code Changelog (자동 변경 이력 기록)
+
+**중요**: 코드를 생성, 수정, 삭제할 때는 반드시 `CodeChangeLogger`를 사용하여 변경 이력을 기록하세요.
+
+### 자동 로깅 규칙
+
+1. **파일 생성/수정/삭제 시 필수 작업**:
+   - 코드 변경 후 `CodeChangeLogger`로 변경사항 기록
+   - `logger.save_and_build()` 호출하여 `reviews/` 폴더에 문서 생성
+
+2. **로깅 패턴**:
+   ```python
+   import sys
+   from pathlib import Path
+   sys.path.insert(0, str(Path(__file__).parent.parent))
+   
+   from modules.code_changelog_tracker import CodeChangeLogger
+   
+   logger = CodeChangeLogger(
+       project_name="작업명",
+       user_request="사용자 요청 내용"
+   )
+   
+   # 파일 생성 시
+   logger.log_file_creation(file_path, content, reason)
+   
+   # 파일 수정 시
+   logger.log_file_modification(file_path, old, new, reason)
+   
+   # 저장
+   logger.save_and_build()
+   ```
+
+3. **언제 로깅해야 하는가**:
+   - ✅ 새 스킬 생성 시
+   - ✅ 스킬 수정 시
+   - ✅ 파이프라인 스크립트 변경 시
+   - ✅ 설정 파일 변경 시
+   - ✅ 버그 수정 시
+   - ✅ 리팩토링 시
+
+4. **로깅 예외**:
+   - ❌ 단순 README 업데이트
+   - ❌ 문서 오타 수정
+   - ❌ 주석 추가만
+
+### 사용 예시
+
+**스킬 생성 시**:
+```python
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from modules.code_changelog_tracker import CodeChangeLogger
+
+logger = CodeChangeLogger(
+    "Create New Skill - data_validator",
+    "Add data validation skill for game metadata"
+)
+logger.log_file_creation(
+    "skills/data_validator/handler.py",
+    "# skill code...",
+    "Validate game data before ranking"
+)
+logger.save_and_build()
+```
+
+**버그 수정 시**:
+```python
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from modules.code_changelog_tracker import CodeChangeLogger
+
+logger = CodeChangeLogger(
+    "Bug Fix - Rating Normalization",
+    "Fix incorrect rating scale calculation"
+)
+logger.log_bug_fix(
+    "skills/ranker/scorer.py",
+    old_content="score = rating * 0.1",
+    new_content="score = rating / 5.0",
+    bug_desc="Rating was scaled to 0-0.5 instead of 0-1",
+    fix_desc="Use division to normalize 0-5 rating to 0-1 range"
+)
+logger.save_and_build()
+```
+
+### 문서 확인
+
+변경 이력은 다음 명령으로 확인:
+```bash
+cd reviews && python3 -m http.server 4000
+# 브라우저: http://localhost:4000
+```
+
+### 참고 문서
+
+- 빠른 시작: `docs/CHANGELOG_QUICKSTART.md`
+- 통합 가이드: `docs/CHANGELOG_INTEGRATION_GUIDE.md`
+- 예제: `examples/changelog_example.py`
+
+---
 
 ## Notes
 
